@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ArchivosCod → TXT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- JSZip para leer el .zip en el navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, #111827, #020617 55%);
+        color: #e5e7eb;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 520px;
+        padding: 24px;
+      }
+
+      .card {
+        background: rgba(15, 23, 42, 0.96);
+        border-radius: 18px;
+        padding: 24px 22px 26px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        backdrop-filter: blur(16px);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      h1 span.logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a 55%);
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.5);
+        font-size: 18px;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        margin-bottom: 16px;
+      }
+
+      .dropzone {
+        margin-top: 8px;
+        border-radius: 16px;
+        border: 1.5px dashed rgba(148, 163, 184, 0.6);
+        padding: 22px 18px;
+        text-align: center;
+        transition: all 0.18s ease-out;
+        background: radial-gradient(circle at top left, #0f172a, #020617);
+        cursor: pointer;
+      }
+
+      .dropzone.dragover {
+        border-color: #22c55e;
+        background: radial-gradient(circle at top left, #022c22, #020617);
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.55);
+      }
+
+      .drop-icon {
+        font-size: 2.1rem;
+        margin-bottom: 4px;
+      }
+
+      .drop-title {
+        font-weight: 600;
+        font-size: 0.98rem;
+        margin-bottom: 4px;
+      }
+
+      .drop-text {
+        font-size: 0.86rem;
+        color: #9ca3af;
+      }
+
+      .drop-or {
+        margin: 8px 0;
+        font-size: 0.78rem;
+        color: #6b7280;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: none;
+        font-size: 0.88rem;
+        font-weight: 500;
+        cursor: pointer;
+        background: linear-gradient(to right, #22c55e, #16a34a);
+        color: #022c22;
+        box-shadow: 0 12px 30px rgba(22, 163, 74, 0.55);
+        transition: transform 0.1s ease-out, box-shadow 0.1s ease-out,
+          filter 0.1s ease-out;
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+        box-shadow: 0 16px 40px rgba(22, 163, 74, 0.7);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.5);
+      }
+
+      .btn span.icon {
+        font-size: 1rem;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .status {
+        margin-top: 14px;
+        font-size: 0.82rem;
+        color: #9ca3af;
+        min-height: 1.2em;
+      }
+
+      .status strong {
+        color: #e5e7eb;
+      }
+
+      .hint {
+        margin-top: 8px;
+        font-size: 0.78rem;
+        color: #6b7280;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.74rem;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(22, 101, 52, 0.25);
+        border: 1px solid rgba(34, 197, 94, 0.4);
+        color: #bbf7d0;
+        margin-left: auto;
+      }
+
+      .header-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      @media (max-width: 480px) {
+        .card {
+          padding: 20px 16px;
+        }
+
+        h1 {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="card">
+        <div class="header-row">
+          <h1>
+            <span class="logo">JS</span>
+            ArchivosCod a TXT
+          </h1>
+          <div class="badge">
+            <span>⚡</span> Client-side
+          </div>
+        </div>
+        <p class="subtitle">
+          Subí un <strong>.zip</strong> de tu proyecto JavaScript y generamos un
+          solo <strong>.txt</strong> con todo el código, listo para compartir o
+          documentar.
+        </p>
+
+        <div id="dropzone" class="dropzone">
+          <div class="drop-icon">📦</div>
+          <div class="drop-title">Arrastrá y soltá tu archivo .zip</div>
+          <div class="drop-text">o elegilo desde tu computadora</div>
+          <div class="drop-or">— o —</div>
+          <label for="fileInput" class="btn">
+            <span class="icon">📁</span>
+            <span>Elegir archivo .zip</span>
+          </label>
+          <input type="file" id="fileInput" accept=".zip" />
+        </div>
+
+        <div id="status" class="status"></div>
+        <div class="hint">
+          Ignoramos carpetas como <code>node_modules</code>, <code>.git</code> y
+          <code>.next</code>.  
+          Extensiones incluidas: <code>.js</code>, <code>.jsx</code>,
+          <code>.ts</code>, <code>.tsx</code>, <code>.json</code>,
+          <code>.html</code>, <code>.css</code>.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const dropzone = document.getElementById("dropzone");
+      const fileInput = document.getElementById("fileInput");
+      const statusEl = document.getElementById("status");
+
+      const EXTENSIONES_PERMITIDAS = [
+        ".js",
+        ".jsx",
+        ".ts",
+        ".tsx",
+        ".json",
+        ".html",
+        ".css",
+      ];
+
+      function setStatus(message, isError = false) {
+        statusEl.innerHTML = message;
+        statusEl.style.color = isError ? "#fca5a5" : "#9ca3af";
+      }
+
+      function esZip(file) {
+        return file && file.name.toLowerCase().endsWith(".zip");
+      }
+
+      function normalizarRuta(ruta) {
+        // Por si viene con backslashes
+        return ruta.replace(/\\/g, "/");
+      }
+
+      async function procesarZip(file) {
+        if (!esZip(file)) {
+          setStatus("⚠️ Por favor subí un archivo con extensión .zip", true);
+          return;
+        }
+
+        setStatus("⏳ Leyendo .zip en el navegador (no se sube a ningún servidor)...");
+
+        try {
+          const zip = await JSZip.loadAsync(file);
+          const entradas = Object.keys(zip.files).sort();
+
+          let contenidoTXT = "";
+          let archivosContados = 0;
+
+          for (const key of entradas) {
+            const entry = zip.files[key];
+            if (entry.dir) continue;
+
+            const ruta = normalizarRuta(entry.name);
+
+            // Ignorar carpetas que no nos interesan
+            if (
+              ruta.includes("node_modules/") ||
+              ruta.includes(".git/") ||
+              ruta.includes(".next/")
+            ) {
+              continue;
+            }
+
+            const extension = "." + ruta.split(".").pop();
+            if (!EXTENSIONES_PERMITIDAS.includes(extension)) {
+              continue;
+            }
+
+            const codigo = await entry.async("string");
+            archivosContados++;
+
+            contenidoTXT +=
+              "=====================================\n" +
+              `Archivo: ${ruta}\n` +
+              "=====================================\n\n" +
+              codigo +
+              "\n\n\n";
+          }
+
+          if (!contenidoTXT) {
+            setStatus(
+              "⚠️ No se encontraron archivos de código válidos dentro del .zip.",
+              true
+            );
+            return;
+          }
+
+          // Crear Blob y disparar descarga
+          const blob = new Blob([contenidoTXT], { type: "text/plain;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+
+          const nombreBase = file.name.replace(/\.zip$/i, "");
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${nombreBase || "proyecto"}-codigo.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          setStatus(
+            `✅ Procesado correctamente. Archivos incluidos: <strong>${archivosContados}</strong>. Descarga generada.`
+          );
+        } catch (err) {
+          console.error(err);
+          setStatus(
+            "❌ Ocurrió un error al leer el .zip. ¿Es un archivo válido de proyecto?",
+            true
+          );
+        }
+      }
+
+      // Manejo input de archivo
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          procesarZip(file);
+        }
+      });
+
+      // Manejo drag & drop
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(
+          eventName,
+          (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          },
+          false
+        );
+      });
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropzone.addEventListener(
+          eventName,
+          () => {
+            dropzone.classList.add("dragover");
+          },
+          false
+        );
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(
+          eventName,
+          () => {
+            dropzone.classList.remove("dragover");
+          },
+          false
+        );
+      });
+
+      dropzone.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        if (file) {
+          procesarZip(file);
+        }
+      });
+
+      dropzone.addEventListener("click", () => {
+        fileInput.click();
+      });
+    </script>
+  </body>
+</html>
