@@ -1,0 +1,11 @@
+{
+  "name": "archivoscod-a-txt",
+  "version": "1.0.0",
+  "description": "Convierte todos los archivos de un proyecto JS en un solo .txt",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Luigi",
+  "license": "MIT"
+}
